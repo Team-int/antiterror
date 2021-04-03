@@ -21,5 +21,4 @@ client.on('roleDelete', events.onRoleDelete)
 client.on('guildMemberRemove', events.onGuildMemberRemove)
 client.on('guildBanAdd', events.onGuildBanAdd)
 
-
 client.login(process.env.TOKEN)
