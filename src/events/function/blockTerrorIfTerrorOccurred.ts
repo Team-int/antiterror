@@ -21,6 +21,7 @@ async function blockTerrorIfTerrorOccurred (guild: Guild): Promise<void> {
       guild.owner?.send(`${member.user.tag} terror detected, but failed to ban`)
       return
     }
+    
     guild.member(log.executor)?.ban({
       reason: '[ANTITERROR] TERROR DETECTED.'
     })
@@ -30,7 +31,7 @@ async function blockTerrorIfTerrorOccurred (guild: Guild): Promise<void> {
   const timeout = setTimeout(() => {
     deletes.set(log.executor.id, 0)
     clearInterval(timeout)
-  }, MS_IN_A_MINUTE * 10)
+  }, MS_IN_A_MINUTE * 5)
 }
 
 export default blockTerrorIfTerrorOccurred
