@@ -1,0 +1,3 @@
+# AntiTerror
+
+**STOP TERROR ON DISCORD**

@@ -1,0 +1,13 @@
+{
+  "name": "antiterror",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "tsc && cd dist && node index"
+  },
+  "dependencies": {
+    "@types/node": "^14.14.33",
+    "discord.js": "^12.5.1"
+  }
+}
