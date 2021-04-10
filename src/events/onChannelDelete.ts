@@ -7,7 +7,7 @@ import blockTerrorIfTerrorOccurred from './function/blockTerrorIfTerrorOccurred'
 function onChannelDelete (channel: Channel): void {
   const guildChannel = channel as GuildChannel
 
-  blockTerrorIfTerrorOccurred(guildChannel.guild)
+  blockTerrorIfTerrorOccurred(guildChannel.guild, guildChannel)
 }
 
 export default onChannelDelete
