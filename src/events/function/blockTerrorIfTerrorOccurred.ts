@@ -97,7 +97,16 @@ async function restoreChannelDelete (guild: Guild, channel: GuildChannel) {
 }
 
 async function restoreRoleDelete (guild: Guild, role: Role) {
-  // ummmm comming soon
+  guild.roles.create({
+    data: {
+      name: role.name,
+      color: role.color,
+      hoist: role.hoist,
+      position: role.position,
+      permissions: role.permissions,
+      mentionable: role.mentionable
+    }
+  })
 }
 
 export default blockTerrorIfTerrorOccurred
