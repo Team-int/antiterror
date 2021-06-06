@@ -15,7 +15,7 @@ async function blockTerrorIfTerrorOccurred (guild: Guild, extra?: GuildChannel |
   deletes.set(log.executor.id, deletes.get(log.executor.id)! + 1)
   if (extra) restorables.get(log.executor.id)?.push(extra)
 
-  if (deletes.get(log.executor.id)! >= Math.floor(guild.channels.cache.size / 2 + guild.roles.cache.size)) {
+  if (deletes.get(log.executor.id)! >= 5) {
     const member = guild.member(log.executor.id)!
 
     if (!member.bannable) {
