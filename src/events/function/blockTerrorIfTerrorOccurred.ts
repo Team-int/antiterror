@@ -8,6 +8,8 @@ async function blockTerrorIfTerrorOccurred (guild: Guild, extra?: GuildChannel |
 
   const log = Array.from(logs.entries.entries())[0][1]
 
+  if (log.executor.id === guild.owner?.id) return
+
   if (!guildDeletes.has(guild.id)) guildDeletes.set(guild.id, new Map<string, number>())
   const deletes = guildDeletes.get(guild.id)!
   if (!deletes.has(log.executor.id)) deletes.set(log.executor.id, 0)
