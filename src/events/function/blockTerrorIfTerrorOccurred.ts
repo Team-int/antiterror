@@ -18,7 +18,6 @@ async function blockTerrorIfTerrorOccurred (guild: Guild, extra?: GuildChannel |
       restorables.set(log.executor.id, [])
     }
     restorables.get(log.executor.id)?.push(extra)
-    console.log(restorables.get(log.executor.id))
   }
 
   if (deletes.get(log.executor.id)! >= 5) {
