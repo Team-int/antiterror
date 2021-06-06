@@ -1,4 +1,4 @@
-import { CategoryChannel, Guild, GuildAuditLogsEntry, GuildChannel, NewsChannel, Role, TextChannel, VoiceChannel } from 'discord.js'
+import { Guild, GuildAuditLogsEntry, GuildChannel, Role, TextChannel, VoiceChannel } from 'discord.js'
 
 const guildDeletes = new Map<string, Map<string, number>>()
 const restorables = new Map<string, Array<GuildChannel | Role>>()
@@ -13,23 +13,32 @@ async function blockTerrorIfTerrorOccurred (guild: Guild, extra?: GuildChannel |
   if (!deletes.has(log.executor.id)) deletes.set(log.executor.id, 0)
 
   deletes.set(log.executor.id, deletes.get(log.executor.id)! + 1)
-  if (extra) restorables.get(log.executor.id)?.push(extra)
+  if (extra) {
+    if (!restorables.get(log.executor.id)) {
+      restorables.set(log.executor.id, [])
+    }
+    restorables.get(log.executor.id)?.push(extra)
+    console.log(restorables.get(log.executor.id))
+  }
 
   if (deletes.get(log.executor.id)! >= 5) {
     const member = guild.member(log.executor.id)!
 
     if (!member.bannable) {
       guild.owner?.send(`${member.user.tag} terror detected, but failed to ban`)
-      return
+    } else {
+      guild.member(log.executor)?.ban({
+        reason: '[ANTITERROR] TERROR DETECTED.'
+      })
+
+      guild.owner?.send(`${member.user.tag} banned`)
     }
 
-    guild.member(log.executor)?.ban({
-      reason: '[ANTITERROR] TERROR DETECTED.'
-    })
-    guild.owner?.send(`${member.user.tag} banned`)
     restorables.get(log.executor.id)?.forEach((restorable) => {
       restore(log, restorable)
     })
+    restorables.set(log.executor.id, []) // reset restorables
+    deletes.set(log.executor.id, 0)
   }
 
   const MS_IN_A_MINUTE = 60000
@@ -45,7 +54,7 @@ async function restore (log: GuildAuditLogsEntry, extra: GuildChannel | Role) {
   if (log.action === 'CHANNEL_DELETE') {
     const channel = extra as GuildChannel
 
-    if (channel.type === 'category') {
+    if (channel.type === 'text' || channel.type === 'voice') {
       restoreChannelDelete(guild, channel)
     }
   }
@@ -58,42 +67,32 @@ async function restore (log: GuildAuditLogsEntry, extra: GuildChannel | Role) {
 }
 
 async function restoreChannelDelete (guild: Guild, channel: GuildChannel) {
-  const category = channel as CategoryChannel
+  if (channel.type === 'text') {
+    const textChannel = channel as TextChannel
 
-  const created = await guild.channels.create(category.name, {
-    permissionOverwrites: category.permissionOverwrites,
-    type: category.type,
-    position: category.position
-  })
+    guild.channels.create(textChannel.name, {
+      permissionOverwrites: textChannel.permissionOverwrites,
+      topic: textChannel.topic ? textChannel.topic : undefined,
+      type: textChannel.type,
+      nsfw: textChannel.nsfw,
+   // parent: ,
+      rateLimitPerUser: textChannel.rateLimitPerUser,
+      position: textChannel.rawPosition
+    })
+  }
 
-  category.children.forEach((children) => {
-    if (children.type === 'news' || channel.type === 'text') {
-      const textBasedChannel = children as TextChannel | NewsChannel
+  if (channel.type === 'voice') {
+    const voiceChannel = channel as VoiceChannel
 
-      guild.channels.create(textBasedChannel.name, {
-        permissionOverwrites: textBasedChannel.permissionOverwrites,
-        topic: textBasedChannel.topic ? textBasedChannel.topic : undefined,
-        type: textBasedChannel.type,
-        nsfw: textBasedChannel.nsfw,
-        parent: created,
-        rateLimitPerUser: textBasedChannel instanceof TextChannel ? textBasedChannel.rateLimitPerUser : undefined,
-        position: textBasedChannel.position
-      })
-    }
-
-    if (children.type === 'voice') {
-      const voiceChannel = children as VoiceChannel
-
-      guild.channels.create(voiceChannel.name, {
-        permissionOverwrites: voiceChannel.permissionOverwrites,
-        type: voiceChannel.type,
-        parent: created,
-        bitrate: voiceChannel.bitrate,
-        userLimit: voiceChannel.userLimit,
-        position: voiceChannel.position
-      })
-    }
-  })
+    guild.channels.create(voiceChannel.name, {
+      permissionOverwrites: voiceChannel.permissionOverwrites,
+      type: voiceChannel.type,
+   // parent: ,
+      bitrate: voiceChannel.bitrate,
+      userLimit: voiceChannel.userLimit,
+      position: voiceChannel.position
+    })
+  }
 }
 
 async function restoreRoleDelete (guild: Guild, role: Role) {
