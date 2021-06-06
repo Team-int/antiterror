@@ -1,4 +1,4 @@
-import { Guild, GuildAuditLogsEntry, GuildChannel, Role, TextChannel, VoiceChannel } from 'discord.js'
+import { CategoryChannel, Guild, GuildAuditLogsEntry, GuildChannel, Role, TextChannel, VoiceChannel } from 'discord.js'
 
 const guildDeletes = new Map<string, Map<string, number>>()
 const restorables = new Map<string, Array<GuildChannel | Role>>()
@@ -67,6 +67,16 @@ async function restore (log: GuildAuditLogsEntry, extra: GuildChannel | Role) {
 }
 
 async function restoreChannelDelete (guild: Guild, channel: GuildChannel) {
+  let parent: CategoryChannel | undefined
+
+  if (channel.parent) {
+    const parentChannel = guild.channels.cache.get(channel.parent.id)
+
+    if (parentChannel) {
+      parent = parentChannel as CategoryChannel
+    }
+  }
+
   if (channel.type === 'text') {
     const textChannel = channel as TextChannel
 
@@ -75,7 +85,7 @@ async function restoreChannelDelete (guild: Guild, channel: GuildChannel) {
       topic: textChannel.topic ? textChannel.topic : undefined,
       type: textChannel.type,
       nsfw: textChannel.nsfw,
-   // parent: ,
+      parent,
       rateLimitPerUser: textChannel.rateLimitPerUser,
       position: textChannel.rawPosition
     })
@@ -87,7 +97,7 @@ async function restoreChannelDelete (guild: Guild, channel: GuildChannel) {
     guild.channels.create(voiceChannel.name, {
       permissionOverwrites: voiceChannel.permissionOverwrites,
       type: voiceChannel.type,
-   // parent: ,
+      parent,
       bitrate: voiceChannel.bitrate,
       userLimit: voiceChannel.userLimit,
       position: voiceChannel.position
